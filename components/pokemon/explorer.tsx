@@ -1,0 +1,49 @@
+'use client'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ArrowUpRight, ChevronDown, LoaderCircle, Search, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { fetchPokemonDetails, fetchPokemonPage, formatName, type PokemonDetails, type PokemonSummary, type PokemonType } from '@/lib/pokeapi'
+
+const types = ['all', 'normal', 'fire', 'water', 'electric', 'grass', 'ice', 'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug', 'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'] as const
+
+function TypeBadge({ type }: { type: string }) { return <span className={`type-badge type-${type}`}>{type}</span> }
+function PokemonImage({ pokemon, className = '' }: { pokemon: PokemonSummary; className?: string }) { return <img src={pokemon.image} alt={`${formatName(pokemon.name)} official artwork`} className={`pokemon-image ${className}`} loading="lazy" /> }
+
+function Header({ loaded, total }: { loaded: number; total: number }) {
+  return <header className="site-header"><a href="#top" className="brand" aria-label="Pokémon Explorer home"><span className="pokeball-mark"><span /></span><span>Pokémon<br /><em>Explorer</em></span></a><div className="header-meta"><span>FIELD GUIDE / 2024</span><span className="header-count">{loaded.toString().padStart(3, '0')} / {total.toString().padStart(3, '0')} DISCOVERED</span></div></header>
+}
+
+function Hero({ query, setQuery, loaded }: { query: string; setQuery: (value: string) => void; loaded: number }) {
+  return <section className="hero" id="top"><div className="hero-copy"><p className="eyebrow"><span className="eyebrow-line" /> KANTO TO PALDEA, ONE GUIDE</p><h1>Know your<br /><i>Pokémon.</i></h1><p className="hero-description">A considered field guide to the creatures that make every journey memorable. Search, filter, and get to know the details.</p></div><div className="hero-aside"><div className="hero-stat"><strong>{loaded.toString().padStart(3, '0')}</strong><span>currently<br />indexed</span></div><div className="hero-note">Updated from PokéAPI<br />Every expedition starts here.</div></div><label className="search-box"><Search aria-hidden="true" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by name..." aria-label="Search Pokémon by name" /><kbd>⌘ K</kbd></label></section>
+}
+
+function TypeFilter({ selected, setSelected, available }: { selected: PokemonType; setSelected: (type: PokemonType) => void; available: string[] }) {
+  return <div className="filter-row"><div className="filter-label">FILTER <span>BY TYPE</span></div><div className="type-filters" role="group" aria-label="Filter by Pokémon type">{types.map((type) => <button key={type} className={`filter-pill ${selected === type ? 'is-selected' : ''}`} onClick={() => setSelected(type)} disabled={type !== 'all' && !available.includes(type)}><span className={`filter-dot type-${type}`} />{type}</button>)}</div></div>
+}
+
+function PokemonCard({ pokemon, onSelect }: { pokemon: PokemonSummary; onSelect: (pokemon: PokemonSummary) => void }) {
+  const stat = pokemon.stats?.reduce((best, current) => current.value > best.value ? current : best, pokemon.stats[0])
+  return <button className="pokemon-card" onClick={() => onSelect(pokemon)} aria-label={`View details for ${formatName(pokemon.name)}`}><div className={`card-art art-${pokemon.types[0]}`}><span className="card-id">#{pokemon.id.toString().padStart(3, '0')}</span><ArrowUpRight className="card-arrow" aria-hidden="true" /><PokemonImage pokemon={pokemon} /></div><div className="card-info"><div><h3>{formatName(pokemon.name)}</h3><div className="type-list">{pokemon.types.map((type) => <TypeBadge key={type} type={type} />)}</div></div><div className="card-stat"><span>{stat?.name.replace('special-', 'sp. ')}</span><strong>{stat?.value}</strong></div></div></button>
+}
+
+function SkeletonGrid({ count = 8 }: { count?: number }) { return <div className="pokemon-grid">{Array.from({ length: count }).map((_, index) => <div className="skeleton-card" key={index}><div className="skeleton-art" /><div className="skeleton-line wide" /><div className="skeleton-line" /></div>)}</div> }
+
+function Feedback({ error, empty, retry }: { error?: string; empty?: boolean; retry?: () => void }) { if (error) return <div className="feedback"><span className="feedback-kicker">CONNECTION INTERRUPTED</span><h2>The field notes got lost.</h2><p>{error}</p><Button onClick={retry}>Try again</Button></div>; if (empty) return <div className="feedback"><span className="feedback-kicker">NO SPECIMENS FOUND</span><h2>Try a different trail.</h2><p>Nothing in the current collection matches that search or type.</p></div>; return null }
+
+function DetailModal({ pokemon, onClose }: { pokemon: PokemonSummary; onClose: () => void }) {
+  const [details, setDetails] = useState<PokemonDetails | null>(null)
+  const [error, setError] = useState('')
+  useEffect(() => { let active = true; fetchPokemonDetails(pokemon.id).then((value) => active && setDetails(value)).catch((reason) => active && setError(reason instanceof Error ? reason.message : 'Could not load details.')); return () => { active = false } }, [pokemon.id])
+  useEffect(() => { const onKey = (event: KeyboardEvent) => event.key === 'Escape' && onClose(); document.body.style.overflow = 'hidden'; window.addEventListener('keydown', onKey); return () => { document.body.style.overflow = ''; window.removeEventListener('keydown', onKey) } }, [onClose])
+  return <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><section className="detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-title"><button className="modal-close" onClick={onClose} aria-label="Close details"><X /></button><div className={`modal-art art-${pokemon.types[0]}`}><PokemonImage pokemon={pokemon} /></div><div className="modal-content"><span className="card-id">#{pokemon.id.toString().padStart(3, '0')}</span><h2 id="detail-title">{formatName(pokemon.name)}</h2><div className="type-list">{pokemon.types.map((type) => <TypeBadge key={type} type={type} />)}</div>{error ? <Feedback error={error} retry={() => { setError(''); fetchPokemonDetails(pokemon.id).then(setDetails).catch((reason) => setError(reason instanceof Error ? reason.message : 'Could not load details.')) }} /> : !details ? <div className="modal-loading"><LoaderCircle className="spin" /> Loading field notes</div> : <><div className="quick-facts"><div><span>HEIGHT</span><strong>{(details.height! / 10).toFixed(1)} m</strong></div><div><span>WEIGHT</span><strong>{(details.weight! / 10).toFixed(1)} kg</strong></div><div><span>ABILITIES</span><strong>{details.abilities.join(', ')}</strong></div></div><div className="stats"><span className="section-label">BASE STATS</span>{details.stats?.map((stat) => <div className="stat-row" key={stat.name}><span>{stat.name.replace('special-', 'sp. ')}</span><div className="stat-track"><i style={{ width: `${Math.min(stat.value / 1.5, 100)}%` }} /></div><strong>{stat.value}</strong></div>)}</div></>}</div></section></div>
+}
+
+export default function Explorer() {
+  const [pokemon, setPokemon] = useState<PokemonSummary[]>([]); const [query, setQuery] = useState(''); const [selectedType, setSelectedType] = useState<PokemonType>('all'); const [offset, setOffset] = useState(0); const [total, setTotal] = useState(0); const [loading, setLoading] = useState(true); const [loadingMore, setLoadingMore] = useState(false); const [error, setError] = useState(''); const [selected, setSelected] = useState<PokemonSummary | null>(null)
+  const load = useCallback(async (nextOffset: number, append: boolean) => { try { append ? setLoadingMore(true) : setLoading(true); setError(''); const page = await fetchPokemonPage(nextOffset); setPokemon((current) => append ? [...current, ...page.items] : page.items); setTotal(page.count); setOffset(nextOffset + page.items.length) } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to reach PokéAPI.') } finally { setLoading(false); setLoadingMore(false) } }, [])
+  useEffect(() => { load(0, false) }, [load])
+  const filtered = useMemo(() => pokemon.filter((item) => (selectedType === 'all' || item.types.includes(selectedType)) && (!query || item.name.replace('-', ' ').includes(query.toLowerCase().replace('-', ' ')))), [pokemon, query, selectedType])
+  const available = useMemo(() => Array.from(new Set(pokemon.flatMap((item) => item.types))), [pokemon])
+  return <main><Header loaded={pokemon.length} total={total || 1025} /><Hero query={query} setQuery={setQuery} loaded={pokemon.length} /><section className="collection" aria-label="Pokémon collection"><TypeFilter selected={selectedType} setSelected={setSelectedType} available={available} /><div className="collection-heading"><div><p className="eyebrow"><span className="eyebrow-line" /> SPECIMENS</p><h2>{query || selectedType !== 'all' ? 'Filtered collection' : 'The collection'}</h2></div><span className="result-count">{filtered.length} RESULTS</span></div>{loading ? <SkeletonGrid /> : error && pokemon.length === 0 ? <Feedback error={error} retry={() => load(0, false)} /> : filtered.length === 0 ? <Feedback empty /> : <><div className="pokemon-grid">{filtered.map((item) => <PokemonCard key={item.id} pokemon={item} onSelect={setSelected} />)}</div>{pokemon.length < total && <div className="load-more"><Button variant="outline" onClick={() => load(offset, true)} disabled={loadingMore}>{loadingMore && <LoaderCircle className="spin" data-icon="inline-start" />} {loadingMore ? 'Loading specimens...' : 'Load more specimens'} <ChevronDown data-icon="inline-end" /></Button></div>}</>}</section>{selected && <DetailModal pokemon={selected} onClose={() => setSelected(null)} />}<footer><span>Pokémon Explorer</span><span>Built with curiosity · Data from PokéAPI</span></footer></main>
+}
