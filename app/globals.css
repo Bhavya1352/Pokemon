@@ -188,7 +188,17 @@ button, input {
   line-height: 1.15;
   letter-spacing: -0.02em;
   color: var(--foreground);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.hero-tagline {
+  font-family: var(--font-serif);
+  font-size: 15px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--foreground);
+  margin-bottom: 16px;
+  line-height: 1.4;
 }
 
 .hero-description {
@@ -220,7 +230,11 @@ button, input {
 
 .search-box:focus-within {
   border-color: var(--foreground);
-  box-shadow: 0 0 0 3px rgba(24, 24, 23, 0.05);
+  box-shadow: 0 0 0 3px rgba(24, 24, 23, 0.06);
+}
+
+.search-box:focus-within .search-icon {
+  color: var(--foreground);
 }
 
 .search-icon {
@@ -259,12 +273,13 @@ button, input {
   padding: 4px;
   flex-shrink: 0;
   border-radius: 2px;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .search-clear-btn:hover {
   background: var(--muted);
   color: var(--foreground);
+  transform: scale(1.05);
 }
 
 .clear-icon {
@@ -319,13 +334,18 @@ button, input {
   color: var(--muted-foreground);
   border-radius: 3px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 }
 
 .filter-pill:hover {
   border-color: var(--foreground);
   color: var(--foreground);
+  transform: translateY(-1px);
+}
+
+.filter-pill:active {
+  transform: translateY(0);
 }
 
 .filter-pill.is-selected {
@@ -351,6 +371,11 @@ button, input {
   background: var(--muted);
   border: 1px solid var(--border);
   white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.type-badge:hover {
+  border-color: var(--foreground);
 }
 
 .type-fire { border-color: #EE5E36; color: #EE5E36; background: rgba(238, 94, 54, 0.08); }
@@ -449,13 +474,13 @@ button, input {
 
 /* Subtle Type-based Background Tints */
 .card-art {
-  aspect-ratio: 1 / 0.9;
+  aspect-ratio: 1 / 0.95;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-bottom: 1px solid var(--border-subtle);
   width: 100%;
   background: var(--background);
@@ -488,10 +513,11 @@ button, input {
 }
 
 .card-id {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.02em;
   color: var(--muted-foreground);
+  opacity: 0.7;
 }
 
 .card-image-wrap {
@@ -499,29 +525,29 @@ button, input {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 0;
+  padding: 12px 0;
   z-index: 1;
 }
 
 .pokemon-image {
-  width: 85%;
-  height: 85%;
-  max-height: 150px;
+  width: 90%;
+  height: 90%;
+  max-height: 160px;
   object-fit: contain;
-  filter: drop-shadow(0 8px 12px rgba(24, 24, 23, 0.1));
-  transition: transform 0.3s ease;
+  filter: drop-shadow(0 10px 16px rgba(24, 24, 23, 0.12));
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pokemon-card:hover .pokemon-image {
-  transform: scale(1.05) translateY(-4px);
+  transform: scale(1.08) translateY(-6px);
 }
 
 /* Card Body Information */
 .card-info {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 14px 14px 16px;
+  gap: 12px;
+  padding: 14px 16px 18px;
   background: var(--card);
   width: 100%;
 }
@@ -539,7 +565,7 @@ button, input {
   font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.01em;
-  line-height: 1.2;
+  line-height: 1.25;
   color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -554,19 +580,22 @@ button, input {
 
 .card-stats {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
 }
 
 .card-stat {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  align-items: center;
+  gap: 6px;
+  background: var(--muted);
+  padding: 4px 10px;
+  border-radius: 4px;
 }
 
 .stat-name {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--muted-foreground);
@@ -579,12 +608,12 @@ button, input {
 }
 
 .card-action {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--muted-foreground);
+  color: var(--foreground);
   opacity: 0;
-  transform: translateY(4px);
-  transition: all 0.25s ease;
+  transform: translateY(6px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .pokemon-card:hover .card-action {
@@ -606,23 +635,27 @@ button, input {
   border: 1px solid var(--foreground) !important;
   background: transparent !important;
   color: var(--foreground) !important;
-  border-radius: 2px !important;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace !important;
-  font-size: 12px !important;
-  letter-spacing: 0.06em !important;
-  padding: 10px 24px !important;
+  border-radius: 3px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 10px 20px !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 8px !important;
   cursor: pointer !important;
-  transition: background 0.15s ease, color 0.15s ease !important;
   min-height: 42px;
 }
 
 .load-more-btn:hover {
   background: var(--foreground) !important;
   color: var(--background) !important;
+  transform: translateY(-1px) !important;
+}
+
+.load-more-btn:active {
+  transform: translateY(0) !important;
 }
 
 /* ==========================================================================
@@ -745,13 +778,18 @@ button, input {
   justify-content: center;
   cursor: pointer;
   border-radius: 3px;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-close:hover {
   border-color: var(--foreground);
   background: var(--foreground);
   color: var(--background);
+  transform: scale(1.05);
+}
+
+.modal-close:active {
+  transform: scale(0.95);
 }
 
 .modal-close svg {
@@ -1105,11 +1143,11 @@ button, input {
   }
 
   .card-art {
-    padding: 10px 12px;
+    padding: 12px 14px;
   }
 
   .pokemon-image {
-    max-height: 130px;
+    max-height: 140px;
   }
 
   .card-info {
@@ -1171,11 +1209,11 @@ button, input {
   }
 
   .card-art {
-    padding: 8px 10px;
+    padding: 10px 12px;
   }
 
   .pokemon-image {
-    max-height: 120px;
+    max-height: 130px;
   }
 
   .card-name {
@@ -1284,15 +1322,15 @@ button, input {
   }
 
   .card-art {
-    padding: 8px 10px;
+    padding: 10px 12px;
   }
 
   .card-id {
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .pokemon-image {
-    max-height: 115px;
+    max-height: 125px;
   }
 
   .card-info {
@@ -1419,11 +1457,11 @@ button, input {
   }
 
   .card-art {
-    padding: 6px 8px;
+    padding: 8px 10px;
   }
 
   .pokemon-image {
-    max-height: 100px;
+    max-height: 110px;
   }
 
   .card-info {

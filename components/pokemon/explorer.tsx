@@ -79,6 +79,8 @@ function Hero({
         <div className="hero-copy">
           <h1 className="hero-heading">Explore the Pokémon world.</h1>
 
+          <p className="hero-tagline">A living field guide to 1,351 species.</p>
+
           <p className="hero-description">
             Search, discover, and study Pokémon by species, type, abilities, and stats.
           </p>
@@ -154,9 +156,8 @@ function PokemonCard({
   pokemon: PokemonSummary
   onSelect: (pokemon: PokemonSummary) => void
 }) {
-  const hpStat = pokemon.stats?.find(s => s.name === 'hp')
-  const atkStat = pokemon.stats?.find(s => s.name === 'attack')
   const primaryType = pokemon.types[0] || 'normal'
+  const hp = pokemon.stats?.find((s) => s.name === 'hp')?.value || 0
 
   return (
     <button
@@ -185,22 +186,12 @@ function PokemonCard({
           </div>
         </div>
 
-        {(hpStat || atkStat) && (
-          <div className="card-stats">
-            {hpStat && (
-              <div className="card-stat">
-                <span className="stat-name">HP</span>
-                <strong className="stat-val">{hpStat.value}</strong>
-              </div>
-            )}
-            {atkStat && (
-              <div className="card-stat">
-                <span className="stat-name">ATK</span>
-                <strong className="stat-val">{atkStat.value}</strong>
-              </div>
-            )}
+        <div className="card-stats">
+          <div className="card-stat">
+            <span className="stat-name">HP</span>
+            <span className="stat-val">{hp}</span>
           </div>
-        )}
+        </div>
 
         <div className="card-action">
           <span>View specimen →</span>
