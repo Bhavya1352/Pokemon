@@ -44,26 +44,22 @@ function PokemonImage({
 function Header({ loaded, total }: { loaded: number; total: number }) {
   return (
     <header className="site-header">
-      <a href="#top" className="brand" aria-label="Pokémon Field Lab home">
+      <a href="#top" className="brand" aria-label="Pokémon Field Guide home">
         <span className="pokeball-mark">
           <span />
         </span>
         <div className="brand-text">
           <span className="brand-title">POKÉDEX</span>
-          <span className="brand-subtitle">FIELD LAB / ARCHIVE</span>
+          <span className="brand-subtitle">Field Guide</span>
         </div>
       </a>
 
       <div className="header-meta">
         <div className="meta-item">
-          <span className="meta-dot" />
-          <span>STATION // 01</span>
+          <span>{loaded} discovered</span>
         </div>
         <div className="meta-item">
-          <span>INDEXED:</span>
-          <strong className="header-count">
-            {loaded.toString().padStart(3, '0')} / {total.toString().padStart(3, '0')}
-          </strong>
+          <span>{total.toLocaleString()} species</span>
         </div>
       </div>
     </header>
@@ -73,48 +69,19 @@ function Header({ loaded, total }: { loaded: number; total: number }) {
 function Hero({
   query,
   setQuery,
-  loaded,
-  total,
 }: {
   query: string
   setQuery: (value: string) => void
-  loaded: number
-  total: number
 }) {
   return (
     <section className="hero" id="top">
       <div className="hero-main">
         <div className="hero-copy">
-          <p className="eyebrow">
-            <span className="eyebrow-accent" />
-            POKÉDEX / FIELD NOTES
-          </p>
-
-          <h1 className="hero-heading">Build your Pokédex.</h1>
+          <h1 className="hero-heading">Explore the Pokémon world.</h1>
 
           <p className="hero-description">
-            Browse Pokémon by name or type, then open any specimen for its stats, abilities and moves.
+            Search, discover, and study Pokémon by species, type, abilities, and stats.
           </p>
-        </div>
-
-        <div className="hero-aside">
-          <div className="hero-data-block">
-            <div className="data-header">
-              <span className="data-badge">LIVE DATABASE</span>
-            </div>
-            <div className="data-metric">
-              <strong>
-                {loaded.toString().padStart(3, '0')}
-                <span className="data-slash">/</span>
-                {total ? total.toString().padStart(4, '0') : '1025'}
-              </strong>
-            </div>
-            <div className="data-label">SPECIMENS LOADED</div>
-            <div className="data-subtext">
-              <span className="live-indicator" />
-              LIVE DATA · POKÉAPI
-            </div>
-          </div>
         </div>
       </div>
 
@@ -125,8 +92,8 @@ function Hero({
             id="pokemon-search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search specimen by name (e.g. Charizard, Gengar, Lucario)..."
-            aria-label="Search Pokémon database by name"
+            placeholder="Search Pokémon, type, or number…"
+            aria-label="Search Pokémon by name, type, or number"
             autoComplete="off"
             spellCheck="false"
           />
@@ -138,10 +105,8 @@ function Hero({
               aria-label="Clear search query"
             >
               <X className="clear-icon" />
-              <span>CLEAR</span>
             </button>
           )}
-          <kbd className="search-kbd">⌘ K</kbd>
         </label>
       </div>
     </section>
@@ -158,14 +123,10 @@ function TypeFilter({
   return (
     <div className="filter-wrapper">
       <div className="filter-row">
-        <div className="filter-label">
-          <span>SPECIMEN TYPE /</span>
-        </div>
-
         <div
           className="type-filters"
           role="group"
-          aria-label="Filter Pokémon database by type"
+          aria-label="Filter Pokémon by type"
         >
           {types.map((type) => {
             const isSelected = selected === type
@@ -176,7 +137,6 @@ function TypeFilter({
                 onClick={() => setSelected(type)}
                 type="button"
               >
-                <span className={`filter-dot type-${type}`} />
                 <span className="pill-name">{type}</span>
               </button>
             )
@@ -194,11 +154,8 @@ function PokemonCard({
   pokemon: PokemonSummary
   onSelect: (pokemon: PokemonSummary) => void
 }) {
-  const stat = pokemon.stats?.reduce(
-    (best, current) => (current.value > best.value ? current : best),
-    pokemon.stats[0]
-  )
-
+  const hpStat = pokemon.stats?.find(s => s.name === 'hp')
+  const atkStat = pokemon.stats?.find(s => s.name === 'attack')
   const primaryType = pokemon.types[0] || 'normal'
 
   return (
@@ -206,14 +163,11 @@ function PokemonCard({
       type="button"
       className="pokemon-card"
       onClick={() => onSelect(pokemon)}
-      aria-label={`Open field notes for #${pokemon.id.toString().padStart(3, '0')} ${formatName(pokemon.name)}`}
+      aria-label={`View details for #${pokemon.id.toString().padStart(3, '0')} ${formatName(pokemon.name)}`}
     >
       <div className={`card-art art-${primaryType}`}>
         <div className="card-art-header">
           <span className="card-id">#{pokemon.id.toString().padStart(3, '0')}</span>
-          <span className="card-arrow-wrap">
-            <ArrowUpRight className="card-arrow" aria-hidden="true" />
-          </span>
         </div>
 
         <div className="card-image-wrap">
@@ -231,14 +185,26 @@ function PokemonCard({
           </div>
         </div>
 
-        {stat && (
-          <div className="card-stat">
-            <span className="stat-name">
-              {stat.name.replace('special-', 'SP.').toUpperCase()}
-            </span>
-            <strong className="stat-val">{stat.value}</strong>
+        {(hpStat || atkStat) && (
+          <div className="card-stats">
+            {hpStat && (
+              <div className="card-stat">
+                <span className="stat-name">HP</span>
+                <strong className="stat-val">{hpStat.value}</strong>
+              </div>
+            )}
+            {atkStat && (
+              <div className="card-stat">
+                <span className="stat-name">ATK</span>
+                <strong className="stat-val">{atkStat.value}</strong>
+              </div>
+            )}
           </div>
         )}
+
+        <div className="card-action">
+          <span>View specimen →</span>
+        </div>
       </div>
     </button>
   )
@@ -272,12 +238,11 @@ function Feedback({
   if (error) {
     return (
       <div className="feedback-box">
-        <div className="feedback-kicker">COMMUNICATION INTERRUPTED</div>
-        <h2 className="feedback-title">Field record retrieval stalled.</h2>
-        <p className="feedback-text">{error}</p>
+        <h2 className="feedback-title">Something went wrong.</h2>
+        <p className="feedback-text">Unable to load the field guide.</p>
         {retry && (
           <Button variant="outline" onClick={retry} className="feedback-btn">
-            Retry Connection
+            Try again
           </Button>
         )}
       </div>
@@ -287,10 +252,9 @@ function Feedback({
   if (empty) {
     return (
       <div className="feedback-box">
-        <div className="feedback-kicker">ZERO SPECIMENS MATCHED</div>
-        <h2 className="feedback-title">No matching records found.</h2>
+        <h2 className="feedback-title">Nothing found.</h2>
         <p className="feedback-text">
-          No specimens in the current index match your query or filter parameters.
+          Try another Pokémon, type, or Pokédex number.
         </p>
       </div>
     )
@@ -369,24 +333,16 @@ function DetailModal({
         {/* Left Side: Specimen Visualization Panel */}
         <div className={`modal-art art-${primaryType}`}>
           <div className="modal-art-tag">
-            <span>FIELD SPECIMEN</span>
             <strong>#{pokemon.id.toString().padStart(3, '0')}</strong>
           </div>
           <div className="modal-image-wrap">
             <PokemonImage pokemon={pokemon} className="modal-pokemon-img" />
-          </div>
-          <div className="modal-art-footer">
-            <span>OFFICIAL ARTWORK · POKÉAPI</span>
           </div>
         </div>
 
         {/* Right Side: Field Record Data */}
         <div className="modal-content">
           <div className="modal-header">
-            <div className="modal-meta-row">
-              <span className="record-badge">FIELD RECORD NO. #{pokemon.id.toString().padStart(3, '0')}</span>
-              <span className="record-classification">GENUS // INDEX</span>
-            </div>
             <h2 id="detail-title" className="modal-specimen-name">
               {formatName(pokemon.name)}
             </h2>
@@ -416,30 +372,30 @@ function DetailModal({
           ) : !details ? (
             <div className="modal-loading">
               <LoaderCircle className="spin" />
-              <span>Fetching field telemetry & stats...</span>
+              <span>Loading details...</span>
             </div>
           ) : (
             <div className="modal-body">
               {/* Measurements & Traits */}
               <div className="specimen-section">
-                <span className="section-label">PHYSICAL MEASUREMENTS</span>
+                <span className="section-label">Details</span>
                 <div className="quick-facts">
                   <div className="fact-cell">
-                    <span className="fact-label">HEIGHT</span>
+                    <span className="fact-label">Height</span>
                     <strong className="fact-value">
                       {details.height ? (details.height / 10).toFixed(1) : '—'} m
                     </strong>
                   </div>
 
                   <div className="fact-cell">
-                    <span className="fact-label">WEIGHT</span>
+                    <span className="fact-label">Weight</span>
                     <strong className="fact-value">
                       {details.weight ? (details.weight / 10).toFixed(1) : '—'} kg
                     </strong>
                   </div>
 
                   <div className="fact-cell span-full">
-                    <span className="fact-label">PRIMARY ABILITIES</span>
+                    <span className="fact-label">Abilities</span>
                     <strong className="fact-value fact-abilities">
                       {details.abilities && details.abilities.length > 0
                         ? details.abilities.join(' · ')
@@ -452,7 +408,7 @@ function DetailModal({
               {/* Notable Moves */}
               {details.moves && details.moves.length > 0 && (
                 <div className="specimen-section">
-                  <span className="section-label">NOTABLE COMBAT MOVES</span>
+                  <span className="section-label">Moves</span>
                   <div className="moves-grid">
                     {details.moves.slice(0, 10).map((move) => (
                       <span key={move} className="move-chip">
@@ -466,9 +422,9 @@ function DetailModal({
               {/* Base Stats */}
               <div className="specimen-section">
                 <div className="stats-header">
-                  <span className="section-label">BASE STAT ATTRIBUTES</span>
+                  <span className="section-label">Base Stats</span>
                   <span className="stats-total-label">
-                    TOTAL:{' '}
+                    Total:{' '}
                     <strong>
                       {details.stats?.reduce((sum, s) => sum + s.value, 0) || 0}
                     </strong>
@@ -488,7 +444,7 @@ function DetailModal({
                         <span className="stat-label">{label}</span>
                         <div className="stat-track">
                           <div
-                            className="stat-fill"
+                            className={`stat-fill stat-${primaryType}`}
                             style={{ width: `${normalized}%` }}
                           />
                         </div>
@@ -633,8 +589,6 @@ export default function Explorer() {
       <Hero
         query={query}
         setQuery={setQuery}
-        loaded={pokemon.length}
-        total={total || 1025}
       />
 
       <section className="collection-section" aria-label="Pokémon specimen collection">
@@ -645,20 +599,17 @@ export default function Explorer() {
 
         <div className="collection-heading-bar">
           <div className="heading-group">
-            <p className="eyebrow">
-              <span className="eyebrow-accent" /> ARCHIVE SPECIMENS
-            </p>
             <h2 className="collection-title">
               {query
                 ? `Search: "${query}"`
                 : selectedType !== 'all'
-                ? `Type: ${selectedType.toUpperCase()}`
-                : 'All Recorded Specimens'}
+                ? `${selectedType.charAt(0).toUpperCase() + selectedType.slice(1)} Type`
+                : 'All Pokémon'}
             </h2>
           </div>
 
           <span className="result-count">
-            {pokemon.length} {pokemon.length === 1 ? 'SPECIMEN' : 'SPECIMENS'}
+            {pokemon.length} {pokemon.length === 1 ? 'Pokémon' : 'Pokémon'}
           </span>
         </div>
 
@@ -708,8 +659,8 @@ export default function Explorer() {
                     )}
                     <span>
                       {loadingMore
-                        ? 'Fetching next records...'
-                        : `Load More Specimens (${pokemon.length} of ${total})`}
+                        ? 'Loading...'
+                        : `Load more (${pokemon.length} of ${total})`}
                     </span>
                     <ChevronDown data-icon="inline-end" />
                   </Button>

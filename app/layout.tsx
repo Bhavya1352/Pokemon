@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Pokédex — Field Lab',
-  description: 'Search, filter, and discover Pokémon with a considered field guide powered by PokéAPI.',
+  title: 'Pokédex Field Guide',
+  description: 'Search, discover, and study Pokémon by species, type, abilities, and stats.',
   icons: {
     icon: '/icon.svg',
     apple: '/apple-icon.png',
